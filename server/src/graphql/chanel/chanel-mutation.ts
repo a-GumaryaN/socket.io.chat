@@ -12,7 +12,7 @@ import { removeTags } from "../../modules/XSS";
 
 import { result } from "../dependencies";
 
-import { inputChanel } from "../../graphql/chanel/chanel-schema";
+import { chanel, inputChanel } from "../../graphql/chanel/chanel-schema";
 
 import { userInfo } from "../../server";
 
@@ -52,7 +52,24 @@ const chanelMutation = {
       _id: { type: GraphQLString },
       update: { type: inputChanel },
     },
-    resolve: async (parent, args) => {},
+    resolve: async (parent, args) => {
+      const _id = removeTags(args._id),
+        checkExist = await chanelModel.findOne({ _id });
+
+      if (!checkExist) return { error: "chanel not found..." };
+
+      if (checkExist.owner !== userInfo.username)
+        return { error: "other user can not update a chanel..." };
+
+      const result: any = await chanelModel.updateOne(
+        {
+          _id,
+        },
+        args.update
+      );
+
+      return { result: `modified count : ${result.modifiedCount}` };
+    },
   },
   subscribe: {
     type: result,
@@ -69,12 +86,9 @@ const chanelMutation = {
           error: "Other users can no longer subscribe a user in a group",
         };
 
-      //-->>> asked later...
-      // const checkUserExist = await userModel.findOne({ _id: subscriber_id });
-      // if (!checkUserExist) return { error: "user not exist..." };
-
       const checkChanelExist = await chanelModel.findOne({ _id: chanel_id });
-      if (!checkChanelExist) return { error: "chanel not exist..." };
+      if (!checkChanelExist)
+        return { error: "chanel for subscribe not exist..." };
       if (checkChanelExist.owner === userInfo.username)
         return { error: "user can not subscribe his/her chanels..." };
 
@@ -87,6 +101,20 @@ const chanelMutation = {
       );
 
       return { result: result.modifiedCount };
+    },
+  },
+  deleteChanel: {
+    type: result,
+    args: {
+      _id: { type: GraphQLString },
+    },
+    resolve: async (parent, args) => {
+      const _id = args._id;
+      const checkOwner = await chanelModel.findOne({ _id });
+      if (userInfo.username !== _id)
+        return { error: "only owner of chanel can remove that..." };
+      const result = await chanelModel.deleteOne({ _id });
+      return { result };
     },
   },
 };
