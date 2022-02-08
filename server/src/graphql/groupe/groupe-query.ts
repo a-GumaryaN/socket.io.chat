@@ -4,21 +4,20 @@ import { chanelModel } from "../../db/mongooseSchemas";
 
 import { removeTags } from "../../modules/XSS";
 
-import { chanel } from "../chanel/chanel-schema";
+import { groupe } from "./groupe-schema";
 
-const groupeQuery = {
+export const groupeQuery = {
   chanel: {
-    type: chanel,
+    type: groupe,
     args: {
-      chanelName: { type: GraphQLString },
+      groupeName: { type: GraphQLString },
     },
     resolve: async (parent, args) => {
-      const _id = removeTags(args.chanelName);
+      const _id = removeTags(args.groupeName);
       const result: any = await chanelModel.findOne({ _id });
-      result.chanelName = result._id;
       return result;
     },
   },
 };
 
-export default groupeQuery;
+// export default groupeQuery;

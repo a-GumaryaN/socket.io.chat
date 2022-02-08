@@ -12,13 +12,13 @@ import { removeTags } from "../../modules/XSS";
 
 import { result } from "../dependencies";
 
-import { inputGroupe } from "./groupe-schema";
+import { inputGroupe, groupe } from "./groupe-schema";
 
 import { userInfo } from "../../server";
 
 export const groupeMutation = {
   addGroupe: {
-    type: result,
+    type: groupe,
     args: {
       groupeName: { type: GraphQLString },
       members: { type: GraphQLList(GraphQLString) },
@@ -31,16 +31,18 @@ export const groupeMutation = {
 
       if (checkExist) return { error: "groupe exist..." };
 
-      const members = [];
+      //*****************issue in add some members in first adding groupe********************
 
-      args.members.map((item) => {
-        members.push(removeTags(item));
-      });
+      // const members = [];
+
+      // args.members.map((item) => {
+      //   members.push(removeTags(item));
+      // });
 
       const newGroupe = new groupeModel({
         _id: groupeName,
         owner: userInfo.username,
-        members,
+        members: args.members,
       });
 
       const result = await newGroupe.save();
@@ -59,10 +61,18 @@ export const groupeMutation = {
       const groupeName = removeTags(args.groupeName),
         checkExist = await groupeModel.findOne({ _id: groupeName });
 
+      if (!checkExist) return { error: "groupe not exist..." };
+
+      if (checkExist.owner === userInfo.username)
+        return { error: "user can no longer subscribed his/her groupe..." };
+
+      let checkIsSubscriber = false;
       checkExist.members.map((item) => {
-        if (item === userInfo.username)
-          return { error: "members exist in groupe members..." };
+        if (item === userInfo.username) checkIsSubscriber = true;
       });
+
+      if (checkIsSubscriber)
+        return { error: "members exist in groupe members..." };
 
       const result = await groupeModel.updateOne(
         {
@@ -76,10 +86,10 @@ export const groupeMutation = {
       return { result };
     },
   },
-  updateGroupe: {
-    type:result
-  },
-  addMember: {},
+  // updateGroupe: {
+  //   type:result
+  // },
+  // addMember: {},
 };
 
 // export default groupeMutation;

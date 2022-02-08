@@ -14,6 +14,6 @@ export const mutation = new GraphQLObjectType({
     ...userMutation,
     ...messageMutation,
     ...chanelMutation,
-    // ...groupeMutation
+    ...groupeMutation
   },
 });

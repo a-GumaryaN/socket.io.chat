@@ -163,8 +163,8 @@ class User {
         });
         log("message sended...");
       } else {
-        log("user not subscriber of chanel...");
-        socket.emit("error", { error: "user not subscriber of chanel..." });
+        log("user not subscriber of this groupe...");
+        socket.emit("error", { error: "user not subscriber of this groupe..." });
       }
     },
     chatRoom: async (socket, msg) => {

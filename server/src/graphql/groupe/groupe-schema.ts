@@ -17,12 +17,12 @@ import { groupeModel } from "../../db/mongooseSchemas";
 export const groupe = new GraphQLObjectType({
   name: "groupeType",
   fields: () => ({
+    error: { type: GraphQLString },
     _id: { type: GraphQLString },
     description: { type: GraphQLString },
     members: {
       type: GraphQLList(user),
-      resolve: async (parent, args) => {
-      },
+      resolve: async (parent, args) => {},
     },
     owner: {
       type: user,
